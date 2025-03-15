@@ -1,81 +1,89 @@
 .uploadContainer {
-  /* Define scoped CSS variables */
-  --primary-color: #009eff;
-  --primary-hover: #007acc;
-  --error-color: #ff4d4f;
-  --success-color: #52c41a;
-  --border-radius: 8px;
-  --transition-duration: 0.3s;
-  --input-border: #ccc;
-  --max-width: 500px;
+    /* Define scoped CSS variables */
+    --primary-color: #009eff;
+    --primary-hover: #007acc;
+    --error-color: #ff4d4f;
+    --success-color: #52c41a;
+    --border-radius: 8px;
+    --transition-duration: 0.3s;
+    --input-border: #009eff;
+    --max-width: 500px;
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 1rem auto;
-  max-width: var(--max-width);
-  padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem auto;
+    max-width: var(--max-width);
+    padding: 1rem;
 }
 
 .form > * {
-  margin: 1rem 0;
-  width: 100%;
+    margin: 1rem 0;
+    width: 100%;
 }
 
 .fileInput {
-  padding: 0.5rem;
-  border: 2px solid var(--input-border);
-  border-radius: var(--border-radius);
-  transition: border-color var(--transition-duration);
+    padding: 0.5rem;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    transition: border-color var(--transition-duration);
 }
 
 .fileInput:hover,
 .fileInput:focus {
-  border-color: var(--primary-color);
-  outline: none;
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .button {
-  background-color: var(--primary-color);
-  border: none;
-  border-radius: var(--border-radius);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color var(--transition-duration);
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color var(--transition-duration);
 }
 
 .button:hover,
 .button:focus {
-  background-color: var(--primary-hover);
-  outline: none;
+    background-color: var(--primary-hover);
+    outline: none;
+}
+
+/* Disabled state styling */
+.button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Make error and status messages span the same width as the form/button */
 .error {
-  color: var(--error-color);
-  font-weight: bold;
-  text-align: center;
-  padding: 0.5rem;
-  background-color: #ffe6e6;
-  border: 1px solid var(--error-color);
-  border-radius: var(--border-radius);
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
+    color: var(--error-color);
+    font-weight: bold;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #ffe6e6;
+    border: 1px solid var(--error-color);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
 }
 
 .status {
-  color: var(--success-color);
-  text-align: center;
-  padding: 0.5rem;
-  background-color: #e6ffed;
-  border: 1px solid var(--success-color);
-  border-radius: var(--border-radius);
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
+    color: var(--success-color);
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #e6ffed;
+    border: 1px solid var(--success-color);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
 }

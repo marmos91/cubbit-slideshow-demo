@@ -19,9 +19,9 @@ const UploadForm: React.FC = () => {
     const [uploadStatus, setUploadStatus] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
 
-    // Auto-clear success status only if not uploading and the status is final (not "Uploading...")
+    // Auto-clear success status after a final outcome if not uploading
     useEffect(() => {
-        if (!isUploading && uploadStatus && uploadStatus !== 'Uploading...') {
+        if (!isUploading && uploadStatus) {
             const timer = setTimeout(() => {
                 setUploadStatus('');
             }, 5000);
@@ -29,7 +29,7 @@ const UploadForm: React.FC = () => {
         }
     }, [uploadStatus, isUploading]);
 
-    // Auto-clear error message only if not uploading
+    // Auto-clear error message after a final outcome if not uploading
     useEffect(() => {
         if (!isUploading && error) {
             const timer = setTimeout(() => {
@@ -94,7 +94,7 @@ const UploadForm: React.FC = () => {
 
         try {
             setIsUploading(true);
-            setUploadStatus('Uploading...');
+            // Don't set uploadStatus to "Uploading..." so that the status area remains clear
             setError(null);
 
             const formData = new FormData();
@@ -110,7 +110,7 @@ const UploadForm: React.FC = () => {
                 throw new Error(errorData.message || 'Upload failed');
             }
 
-            // We no longer display the file URL in the success message.
+            // We don't display the file URL, just a success message.
             await response.json();
             setUploadStatus('Image uploaded successfully!');
             setFile(null);
@@ -147,13 +147,13 @@ const UploadForm: React.FC = () => {
                     disabled={isUploading}
                 />
 
+                {/* The button is disabled if no file is selected or if uploading */}
                 <button className={styles.button} type="submit" disabled={isUploading || !file}>
                     {isUploading ? 'Uploading...' : 'Upload Image'}
                 </button>
+                {error && <div className={styles.error}>{error}</div>}
+                {uploadStatus && <div className={styles.status}>{uploadStatus}</div>}
             </form>
-
-            {error && <div className={styles.error}>{error}</div>}
-            {uploadStatus && <div className={styles.status}>{uploadStatus}</div>}
         </div>
     );
 };
