@@ -16,6 +16,7 @@ body {
     /* 4. Improve text rendering */
     -webkit-font-smoothing: antialiased;
     background-color: rgb(4, 4, 4);
+    color: white;
 }
 
 /* 5. Improve media defaults */

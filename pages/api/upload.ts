@@ -18,12 +18,11 @@ const ALLOWED_MIME_TYPES = [
     'image/heif',
 ];
 
-// Maximum file size (40MB in bytes)
+// Parse MAX_FILE_SIZE from the environment, defaulting to 40MB
 const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
     ? parseInt(process.env.MAX_FILE_SIZE, 10)
     : 40 * 1024 * 1024;
 
-// Disable the default body parser to handle files
 export const config = {
     api: {
         bodyParser: false,
@@ -32,7 +31,12 @@ export const config = {
 
 export default async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<{ message: string; fileUrl?: string; fileName?: string; error?: string }>
+    res: NextApiResponse<{
+        message: string;
+        fileUrl?: string;
+        fileName?: string;
+        error?: string;
+    }>
 ) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -40,16 +44,13 @@ export default async function handler(
 
     return new Promise<void>(resolve => {
         try {
-            // Configure formidable with size limits
-            const form = new IncomingForm({
-                maxFileSize: MAX_FILE_SIZE,
-            });
-
+            const form = new IncomingForm({ maxFileSize: MAX_FILE_SIZE });
             form.parse(req, async (err, _fields, files: Files) => {
                 if (err) {
-                    // Check if it's a file size error
                     if (err.message.includes('maxFileSize')) {
-                        res.status(413).json({ message: 'File too large. Maximum size is 40MB.' });
+                        res.status(413).json({
+                            message: `File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`,
+                        });
                     } else {
                         res.status(500).json({
                             message: `Error parsing form data: ${err.message}`,
@@ -59,15 +60,12 @@ export default async function handler(
                 }
 
                 const fileField = files.file;
-                // Handle both single file and array of files
                 const file = Array.isArray(fileField) ? fileField[0] : fileField;
-
                 if (!file) {
                     res.status(400).json({ message: 'No file uploaded' });
                     return resolve();
                 }
 
-                // Validate file type
                 if (!ALLOWED_MIME_TYPES.includes(file.mimetype || '')) {
                     res.status(415).json({
                         message: 'Invalid file type. Only images are allowed.',
@@ -77,7 +75,6 @@ export default async function handler(
                 }
 
                 try {
-                    // Configure S3 client
                     const s3Client = new S3Client({
                         region: process.env.S3_REGION || 'us-east-1',
                         credentials: {
@@ -88,48 +85,40 @@ export default async function handler(
                         forcePathStyle: true,
                     });
 
-                    // Create a folder path based on today's date (YYYY/MM/DD)
                     const today = new Date();
-                    const year = today.getFullYear();
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const day = String(today.getDate()).padStart(2, '0');
-
-                    const folderPath = `${year}/${month}/${day}`;
-
-                    // Generate a unique filename
+                    const folderPath = `${today.getFullYear()}/${String(
+                        today.getMonth() + 1
+                    ).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
                     const fileExtension = path.extname(file.originalFilename || '');
                     const fileName = `${uuidv4()}${fileExtension}`;
-
-                    // Full path with folder structure
                     const fullPath = `${folderPath}/${fileName}`;
 
-                    // Read the file
                     const fileContent = fs.readFileSync(file.filepath);
 
-                    // Upload to S3
                     const uploadParams: PutObjectCommandInput = {
                         Bucket: process.env.S3_BUCKET_NAME as string,
                         Key: fullPath,
                         Body: fileContent,
                         ContentType: file.mimetype || undefined,
-                        ContentDisposition: `inline; filename="${encodeURIComponent(file.originalFilename || fileName)}"`,
+                        ContentDisposition: `inline; filename="${encodeURIComponent(
+                            file.originalFilename || fileName
+                        )}"`,
                     };
 
                     const command = new PutObjectCommand(uploadParams);
                     await s3Client.send(command);
 
-                    // Create the file URL with the folder structure
                     const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fullPath}`;
-
                     res.status(200).json({
                         message: 'Image uploaded successfully',
-                        fileUrl: fileUrl,
+                        fileUrl,
                         fileName: fullPath,
                     });
                     return resolve();
-                } catch (error) {
-                    console.error('Error uploading to S3:', error);
-                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                } catch (uploadError) {
+                    console.error('Error uploading to S3:', uploadError);
+                    const errorMessage =
+                        uploadError instanceof Error ? uploadError.message : 'Unknown error';
                     res.status(500).json({ message: 'Error uploading file', error: errorMessage });
                     return resolve();
                 }

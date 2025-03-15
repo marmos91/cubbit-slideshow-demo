@@ -1,7 +1,6 @@
 .form {
     display: flex;
     flex-direction: column;
-    color: white;
     padding: 0 1rem;
     text-align: center;
 }
@@ -15,4 +14,15 @@
     border-radius: 8px;
     color: white;
     padding: 5px 12px;
+}
+
+.error {
+    color: red;
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.status {
+    color: green;
+    text-align: center;
 }

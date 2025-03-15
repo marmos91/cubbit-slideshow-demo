@@ -14,6 +14,11 @@ interface ErrorResponse {
     error?: string;
 }
 
+// Parse the environment variable or fallback to 40MB.
+const MAX_FILE_SIZE = process.env.NEXT_PUBLIC_MAX_FILE_SIZE
+    ? parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE, 10)
+    : 40 * 1024 * 1024;
+
 const UploadForm: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -36,8 +41,7 @@ const UploadForm: React.FC = () => {
     };
 
     const isValidFileSize = (file: File): boolean => {
-        const maxSize = 40 * 1024 * 1024; // 40MB
-        return file.size <= maxSize;
+        return file.size <= MAX_FILE_SIZE;
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +61,7 @@ const UploadForm: React.FC = () => {
 
             // Validate file size
             if (!isValidFileSize(selectedFile)) {
-                setError('File too large. Maximum size is 40MB.');
+                setError(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
                 e.target.value = '';
                 return;
             }
@@ -70,7 +74,7 @@ const UploadForm: React.FC = () => {
         e.preventDefault();
 
         if (!file) {
-            setError('Please select a file first');
+            setError('Please select a file first.');
             return;
         }
 
@@ -79,11 +83,9 @@ const UploadForm: React.FC = () => {
             setUploadStatus('Uploading...');
             setError(null);
 
-            // Create form data to send to Next.js API route
             const formData = new FormData();
             formData.append('file', file);
 
-            // Send file to Next.js API route
             const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData,
@@ -91,22 +93,23 @@ const UploadForm: React.FC = () => {
 
             if (!response.ok) {
                 const errorData: ErrorResponse = await response.json();
+                // Optionally, check status code here for more granular handling
                 throw new Error(errorData.message || 'Upload failed');
             }
 
-            const data: UploadResponse = await response.json();
-
-            setUploadStatus(`Image uploaded successfully! URL: ${data.fileUrl}`);
+            setUploadStatus(`Image uploaded successfully!`);
             setFile(null);
 
-            // Reset file input
+            // Reset file input value
             const fileInput = document.querySelector('input[type="file"]');
             if (fileInput) {
                 (fileInput as HTMLInputElement).value = '';
             }
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            setError(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } catch (err) {
+            console.error('Error uploading file:', err);
+            setError(
+                `Upload failed: ${err instanceof Error ? err.message : 'Unknown error occurred'}`
+            );
             setUploadStatus('');
         } finally {
             setIsUploading(false);
@@ -117,7 +120,7 @@ const UploadForm: React.FC = () => {
         <div>
             <form className={styles.form} onSubmit={uploadFile}>
                 <div className={styles.instructions}>
-                    <p>Upload an image (max 40MB)</p>
+                    <p>Upload an image (max {MAX_FILE_SIZE / (1024 * 1024)}MB)</p>
                     <p>Supported formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, HEIC, HEIF</p>
                 </div>
 
@@ -133,8 +136,8 @@ const UploadForm: React.FC = () => {
                 </button>
             </form>
 
-            {error && <p className={styles.error}>{error}</p>}
-            {uploadStatus && <p className={styles.status}>{uploadStatus}</p>}
+            {error && <div className={styles.error}>{error}</div>}
+            {uploadStatus && <div className={styles.status}>{uploadStatus}</div>}
         </div>
     );
 };
