@@ -15,8 +15,9 @@ body {
     line-height: 1.5;
     /* 4. Improve text rendering */
     -webkit-font-smoothing: antialiased;
-    background-color: rgb(4, 4, 4);
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
     color: white;
+    font-family: 'Titillium Web', sans-serif;
 }
 
 /* 5. Improve media defaults */

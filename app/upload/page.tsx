@@ -13,7 +13,7 @@ const UploadPage = () => {
         <main className={[styles.uploadPage, titillium.className].join(' ')}>
             <div className={styles.logo}>
                 <img src="/cubbit.png" alt="Cubbit logo" />
-                <img src="/elemento.png" alt="Cubbit logo" />
+                <img src="/elemento.png" alt="Elemento logo" />
             </div>
             <h1 className={styles.h1}>Upload a photo now to celebrate CloudFest</h1>
             <UploadForm />
