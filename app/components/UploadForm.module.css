@@ -1,4 +1,15 @@
 .form {
-    background-color: red;
-    max-width: 25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form > * {
+    margin: 0.5rem;
+}
+
+.button {
+    background-color: rgba(0, 158, 255, 1);
+    border-radius: 8px;
+    color: white;
+    padding: 5px 12px;
 }
