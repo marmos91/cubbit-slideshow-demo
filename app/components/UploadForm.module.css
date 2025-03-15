@@ -1,28 +1,81 @@
+.uploadContainer {
+  /* Define scoped CSS variables */
+  --primary-color: #009eff;
+  --primary-hover: #007acc;
+  --error-color: #ff4d4f;
+  --success-color: #52c41a;
+  --border-radius: 8px;
+  --transition-duration: 0.3s;
+  --input-border: #ccc;
+  --max-width: 500px;
+}
+
 .form {
-    display: flex;
-    flex-direction: column;
-    padding: 0 1rem;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem auto;
+  max-width: var(--max-width);
+  padding: 1rem;
 }
 
 .form > * {
-    margin: 0.5rem;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.fileInput {
+  padding: 0.5rem;
+  border: 2px solid var(--input-border);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-duration);
+}
+
+.fileInput:hover,
+.fileInput:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 .button {
-    background-color: rgba(0, 158, 255, 1);
-    border-radius: 8px;
-    color: white;
-    padding: 5px 12px;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-duration);
 }
 
+.button:hover,
+.button:focus {
+  background-color: var(--primary-hover);
+  outline: none;
+}
+
+/* Make error and status messages span the same width as the form/button */
 .error {
-    color: red;
-    padding: 0 1rem;
-    text-align: center;
+  color: var(--error-color);
+  font-weight: bold;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #ffe6e6;
+  border: 1px solid var(--error-color);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
 
 .status {
-    color: green;
-    text-align: center;
+  color: var(--success-color);
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #e6ffed;
+  border: 1px solid var(--success-color);
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
 }

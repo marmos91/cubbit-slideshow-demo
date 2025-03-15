@@ -1,13 +1,7 @@
 'use client';
 
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import styles from './UploadForm.module.css';
-
-interface UploadResponse {
-    message: string;
-    fileUrl: string;
-    fileName: string;
-}
 
 interface ErrorResponse {
     message: string;
@@ -24,6 +18,26 @@ const UploadForm: React.FC = () => {
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const [uploadStatus, setUploadStatus] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
+
+    // Auto-clear success status only if not uploading and the status is final (not "Uploading...")
+    useEffect(() => {
+        if (!isUploading && uploadStatus && uploadStatus !== 'Uploading...') {
+            const timer = setTimeout(() => {
+                setUploadStatus('');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [uploadStatus, isUploading]);
+
+    // Auto-clear error message only if not uploading
+    useEffect(() => {
+        if (!isUploading && error) {
+            const timer = setTimeout(() => {
+                setError(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, isUploading]);
 
     const isValidFileType = (file: File): boolean => {
         const validImageTypes = [
@@ -48,7 +62,7 @@ const UploadForm: React.FC = () => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
 
-            // Clear previous status
+            // Clear previous status and errors
             setUploadStatus('');
             setError(null);
 
@@ -93,11 +107,12 @@ const UploadForm: React.FC = () => {
 
             if (!response.ok) {
                 const errorData: ErrorResponse = await response.json();
-                // Optionally, check status code here for more granular handling
                 throw new Error(errorData.message || 'Upload failed');
             }
 
-            setUploadStatus(`Image uploaded successfully!`);
+            // We no longer display the file URL in the success message.
+            await response.json();
+            setUploadStatus('Image uploaded successfully!');
             setFile(null);
 
             // Reset file input value
@@ -117,7 +132,7 @@ const UploadForm: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className={styles.uploadContainer}>
             <form className={styles.form} onSubmit={uploadFile}>
                 <div className={styles.instructions}>
                     <p>Upload an image (max {MAX_FILE_SIZE / (1024 * 1024)}MB)</p>
@@ -126,6 +141,7 @@ const UploadForm: React.FC = () => {
 
                 <input
                     type="file"
+                    className={styles.fileInput}
                     accept="image/*"
                     onChange={handleFileChange}
                     disabled={isUploading}
