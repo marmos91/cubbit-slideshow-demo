@@ -19,7 +19,9 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 // Maximum file size (40MB in bytes)
-const MAX_FILE_SIZE = 40 * 1024 * 1024;
+const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
+    ? parseInt(process.env.MAX_FILE_SIZE, 10)
+    : 40 * 1024 * 1024;
 
 // Disable the default body parser to handle files
 export const config = {
