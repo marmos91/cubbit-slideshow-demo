@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-// Disable the default body parser to handle files
 export const config = {
     api: {
         bodyParser: false,
@@ -22,7 +21,6 @@ export default async function handler(
 
     return new Promise<void>((resolve, reject) => {
         try {
-            // Parse the form data with formidable
             const form = new IncomingForm();
 
             form.parse(req, async (err, _fields, files: Files) => {
@@ -32,8 +30,6 @@ export default async function handler(
                 }
 
                 const fileField = files.file;
-
-                // Handle both single file and array of files
                 const file = Array.isArray(fileField) ? fileField[0] : fileField;
 
                 if (!file) {
@@ -42,7 +38,6 @@ export default async function handler(
                 }
 
                 try {
-                    // Configure S3 client (credentials stored securely on the server)
                     const s3Client = new S3Client({
                         region: process.env.S3_REGION || 'us-east-1',
                         credentials: {
@@ -53,30 +48,38 @@ export default async function handler(
                         forcePathStyle: true,
                     });
 
-                    // Generate a unique filename
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+
+                    const folderPath = `${year}/${month}/${day}`;
+
                     const fileExtension = path.extname(file.originalFilename || '');
                     const fileName = `${uuidv4()}${fileExtension}`;
 
-                    // Read the file
+                    const fullPath = `${folderPath}/${fileName}`;
+
                     const fileContent = fs.readFileSync(file.filepath);
 
                     // Upload to S3
                     const uploadParams: PutObjectCommandInput = {
                         Bucket: process.env.S3_BUCKET_NAME as string,
-                        Key: fileName,
+                        Key: fullPath,
                         Body: fileContent,
+                        ContentType: file.mimetype || undefined,
                     };
 
                     const command = new PutObjectCommand(uploadParams);
                     await s3Client.send(command);
 
-                    // Create the file URL (adjust based on your S3-compatible service)
-                    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+                    // Create the file URL with the folder structure
+                    const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fullPath}`;
 
                     res.status(200).json({
                         message: 'File uploaded successfully',
                         fileUrl: fileUrl,
-                        fileName: fileName,
+                        fileName: fullPath,
                     });
                     return resolve();
                 } catch (error) {
