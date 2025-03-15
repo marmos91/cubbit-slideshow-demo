@@ -1,0 +1,22 @@
+.uploadPage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+}
+
+.logo img {
+    padding: 20px;
+}
+
+.h1 {
+    color: white;
+    text-align: center;
+    padding: 1rem;
+}
