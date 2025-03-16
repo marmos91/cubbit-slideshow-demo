@@ -3,37 +3,30 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
-    padding: 2rem;
+    min-height: 100vh; /* Occupies full viewport height */
+    background: #121212; /* Dark background */
+    padding: 1rem;
 }
 
 .logo {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
 }
 
 .logo img {
-    padding: 10px;
     max-height: 80px;
-    transition:
-        transform 0.3s ease,
-        filter 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
 .logo img:hover {
     transform: scale(1.1);
-    filter: brightness(1.2);
 }
 
 .h1 {
-    font-size: 2rem;
     color: #e0e0e0;
     text-align: center;
-    padding: 1rem;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 2rem;
+    font-size: 2rem;
 }

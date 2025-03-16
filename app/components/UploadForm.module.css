@@ -1,5 +1,5 @@
 .uploadContainer {
-    /* Define scoped CSS variables */
+    /* Scoped CSS variables */
     --primary-color: #009eff;
     --primary-hover: #007acc;
     --error-color: #ff4d4f;
@@ -7,21 +7,30 @@
     --border-radius: 8px;
     --transition-duration: 0.3s;
     --input-border: #009eff;
-    --max-width: 500px;
+    --max-width: 600px;
+
+    background-color: #121212;  /* Dark background */
+    color: #e0e0e0;              /* Light text */
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: var(--max-width);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
 }
 
 .form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 1rem auto;
-    max-width: var(--max-width);
-    padding: 1rem;
+    gap: 1.5rem;
+    width: 100%;
 }
 
-.form > * {
-    margin: 1rem 0;
-    width: 100%;
+.instructions {
+    text-align: center;
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    line-height: 1.4;
 }
 
 /* Keyframe for fadeIn animation */
@@ -36,10 +45,12 @@
     }
 }
 
+/* File Input Wrapper */
 .fileInputWrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
 }
 
 /* Hide the default file input */
@@ -47,18 +58,18 @@
     display: none;
 }
 
+/* Custom file input label styled as a button */
 .fileLabel {
     display: inline-block;
+    width: 100%;
     background-color: var(--primary-color);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition:
-        background-color var(--transition-duration),
-        transform var(--transition-duration);
+    transition: background-color var(--transition-duration), transform var(--transition-duration);
     text-align: center;
-    width: 100%;
+    font-weight: 500;
 }
 
 .fileLabel:hover,
@@ -69,12 +80,13 @@
 
 /* Display selected file name */
 .selectedFileName {
-    margin-top: 0.5rem;
     font-style: italic;
-    color: #ccc;
+    color: #aaa;
+    font-size: 0.95rem;
     text-align: center;
 }
 
+/* Button styling */
 .button {
     background-color: var(--primary-color);
     border: none;
@@ -82,8 +94,10 @@
     color: white;
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color var(--transition-duration), transform var(--transition-duration);
+    width: 100%;
 }
 
 .button:hover,
@@ -93,45 +107,71 @@
     transform: scale(1.03);
 }
 
-/* Disabled state styling */
+/* Disabled state styling with no hover/focus animation */
 .button:disabled {
-    background-color: #ccc;
-    color: #666;
+    background-color: #555;
+    color: #999;
     cursor: not-allowed;
     opacity: 0.7;
 }
-
-/* Override hover/focus effects for disabled button */
 .button:disabled:hover,
 .button:disabled:focus {
-    background-color: #ccc;
+    background-color: #555;
     transform: none;
 }
 
-/* Error and status messages with fade-in animation */
-.error {
-    color: var(--error-color);
-    font-weight: bold;
-    text-align: center;
-    padding: 0.5rem;
-    background-color: #ffe6e6;
-    border: 1px solid var(--error-color);
-    border-radius: var(--border-radius);
+/* Toast container for error and status messages */
+.toastContainer {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 90%;
+    max-width: 600px;
+    padding: 0 1rem;
+}
+
+/* Common toast styling with no text wrapping */
+.errorToast,
+.statusToast {
     width: 100%;
-    max-width: var(--max-width);
-    margin: 0 auto;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    font-size: 1.2rem; /* Larger text */
+    text-align: center;
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
     animation: fadeIn 0.5s ease-in-out;
 }
 
-.status {
+/* Toast styles for error messages */
+.errorToast {
+    background-color: #2a0000;
+    color: var(--error-color);
+}
+
+/* Toast styles for success messages */
+.statusToast {
+    background-color: #002200;
     color: var(--success-color);
-    text-align: center;
-    padding: 0.5rem;
-    background-color: #e6ffed;
-    border: 1px solid var(--success-color);
-    border-radius: var(--border-radius);
-    width: 100%;
-    max-width: var(--max-width);
-    margin: 0 auto;
-    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .toastContainer {
+        bottom: 0.5rem;
+        gap: 0.5rem;
+    }
+    .errorToast,
+    .statusToast {
+        font-size: 1.1rem;
+        padding: 0.75rem;
+    }
 }

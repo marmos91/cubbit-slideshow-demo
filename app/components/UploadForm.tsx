@@ -19,7 +19,7 @@ const UploadForm: React.FC = () => {
     const [uploadStatus, setUploadStatus] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
 
-    // Auto-clear success status after a final outcome if not uploading
+    // Auto-clear success status after a final outcome if not uploading.
     useEffect(() => {
         if (!isUploading && uploadStatus) {
             const timer = setTimeout(() => {
@@ -29,7 +29,7 @@ const UploadForm: React.FC = () => {
         }
     }, [uploadStatus, isUploading]);
 
-    // Auto-clear error message after a final outcome if not uploading
+    // Auto-clear error message after a final outcome if not uploading.
     useEffect(() => {
         if (!isUploading && error) {
             const timer = setTimeout(() => {
@@ -62,18 +62,18 @@ const UploadForm: React.FC = () => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
 
-            // Clear previous status and errors
+            // Clear previous status and errors.
             setUploadStatus('');
             setError(null);
 
-            // Validate file type
+            // Validate file type.
             if (!isValidFileType(selectedFile)) {
                 setError('Invalid file type. Only images are allowed.');
                 e.target.value = '';
                 return;
             }
 
-            // Validate file size
+            // Validate file size.
             if (!isValidFileSize(selectedFile)) {
                 setError(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
                 e.target.value = '';
@@ -94,7 +94,7 @@ const UploadForm: React.FC = () => {
 
         try {
             setIsUploading(true);
-            // Don't set uploadStatus to "Uploading..." so that the status area remains clear
+            // Clear any previous errors.
             setError(null);
 
             const formData = new FormData();
@@ -115,7 +115,7 @@ const UploadForm: React.FC = () => {
             setUploadStatus('Image uploaded successfully!');
             setFile(null);
 
-            // Reset file input value
+            // Reset file input value.
             const fileInput = document.querySelector('input[type="file"]');
             if (fileInput) {
                 (fileInput as HTMLInputElement).value = '';
@@ -132,35 +132,41 @@ const UploadForm: React.FC = () => {
     };
 
     return (
-        <div className={styles.uploadContainer}>
-            <form className={styles.form} onSubmit={uploadFile}>
-                <div className={styles.instructions}>
-                    <p>Upload an image (max {MAX_FILE_SIZE / (1024 * 1024)}MB)</p>
-                    <p>Supported formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, HEIC, HEIF</p>
-                </div>
+        <>
+            <div className={styles.uploadContainer}>
+                <form className={styles.form} onSubmit={uploadFile}>
+                    <div className={styles.instructions}>
+                        <p>Upload an image (max {MAX_FILE_SIZE / (1024 * 1024)}MB)</p>
+                        <p>
+                            Supported formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, HEIC, HEIF
+                        </p>
+                    </div>
 
-                <div className={styles.fileInputWrapper}>
-                    <input
-                        type="file"
-                        id="fileInput"
-                        className={styles.fileInput}
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        disabled={isUploading}
-                    />
-                    <label htmlFor="fileInput" className={styles.fileLabel}>
-                        {file ? '📷 Change File' : '📷 Select an Image'}
-                    </label>
-                    {file && <div className={styles.selectedFileName}>{file.name}</div>}
-                </div>
+                    <div className={styles.fileInputWrapper}>
+                        <input
+                            type="file"
+                            id="fileInput"
+                            className={styles.fileInput}
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            disabled={isUploading}
+                        />
+                        <label htmlFor="fileInput" className={styles.fileLabel}>
+                            {file ? '📷 Change File' : '📷 Select an Image'}
+                        </label>
+                        {file && <div className={styles.selectedFileName}>{file.name}</div>}
+                    </div>
 
-                <button className={styles.button} type="submit" disabled={isUploading || !file}>
-                    {isUploading ? '⏳ Uploading...' : '🚀 Upload Image'}
-                </button>
-                {error && <div className={styles.error}>⚠️ {error}</div>}
-                {uploadStatus && <div className={styles.status}>✅ {uploadStatus}</div>}
-            </form>
-        </div>
+                    <button className={styles.button} type="submit" disabled={isUploading || !file}>
+                        {isUploading ? '⏳ Uploading...' : '🚀 Upload Image'}
+                    </button>
+                </form>
+            </div>
+            <div className={styles.toastContainer}>
+                {error && <div className={styles.errorToast}>⚠️ {error}</div>}
+                {uploadStatus && <div className={styles.statusToast}>✅ {uploadStatus}</div>}
+            </div>
+        </>
     );
 };
 
