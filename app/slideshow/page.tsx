@@ -18,7 +18,7 @@ interface PhotoStyle {
 
 const POLL_INTERVAL = 5000; // Poll every 5 seconds
 const SWAP_INTERVAL = 3000; // Swap every 3 seconds
-const MAX_IMAGES = 9; // Maximum photos on screen
+const MAX_IMAGES = 12; // Maximum photos on screen
 
 /**
  * CrossfadeImage Component
@@ -44,13 +44,15 @@ function CrossfadeImage({ src, alt, sizes }: { src: string; alt: string; sizes: 
 
     return (
         <div className={styles.crossfadeWrapper}>
-            {prevSrc && (
-                <div className={styles.crossfadeImage} style={{ opacity: fade ? 0 : 1 }}>
-                    <Image src={prevSrc} alt={alt} fill sizes={sizes} />
+            <div className={styles.imageWrapper}>
+                {prevSrc && (
+                    <div className={styles.crossfadeImage} style={{ opacity: fade ? 0 : 1 }}>
+                        <Image src={prevSrc} alt={alt} fill sizes={sizes} />
+                    </div>
+                )}
+                <div className={styles.crossfadeImage} style={{ opacity: 1 }}>
+                    <Image src={currentSrc} alt={alt} fill sizes={sizes} />
                 </div>
-            )}
-            <div className={styles.crossfadeImage} style={{ opacity: 1 }}>
-                <Image src={currentSrc} alt={alt} fill sizes={sizes} />
             </div>
         </div>
     );
@@ -94,7 +96,6 @@ export default function SlideshowPage() {
             setDisplayedPhotos(allPhotos);
         } else {
             if (displayedPhotos.length === 0) {
-                // Initialize with a random sample of MAX_IMAGES.
                 const copy = [...allPhotos];
                 const initial: Photo[] = [];
                 for (let i = 0; i < MAX_IMAGES; i++) {
@@ -127,15 +128,16 @@ export default function SlideshowPage() {
         }
     }, [allPhotos]);
 
-    // Preserve existing cellStyles and add styles for any new displayed photo.
+    // Preserve existing cellStyles and add styles for new displayed photos.
     useEffect(() => {
         setCellStyles(prevStyles => {
             const newStyles = { ...prevStyles };
             displayedPhotos.forEach(photo => {
                 if (!newStyles[photo.key]) {
-                    const translateX = Math.random() * 20 - 10; // ±10%
-                    const translateY = Math.random() * 20 - 10; // ±10%
-                    const duration = 3 + Math.random() * 2; // 3 to 5 seconds
+                    // Generate random translation offsets of ±10% and a duration between 3-5 seconds.
+                    const translateX = Math.random() * 20 - 10;
+                    const translateY = Math.random() * 20 - 10;
+                    const duration = 3 + Math.random() * 2;
                     newStyles[photo.key] = { translateX, translateY, duration };
                 }
             });
@@ -147,8 +149,8 @@ export default function SlideshowPage() {
     const count = displayedPhotos.length;
     const columns = Math.ceil(Math.sqrt(count));
     const rows = Math.ceil(count / columns);
-    const cellWidth = 100 / columns; // in percentage
-    const cellHeight = 100 / rows; // in percentage
+    const cellWidth = 100 / columns; // as percentage
+    const cellHeight = 100 / rows; // as percentage
 
     return (
         <div className={styles.container}>
@@ -166,7 +168,6 @@ export default function SlideshowPage() {
                 const styleForPhoto = cellStyles[photo.key];
                 if (!styleForPhoto) return null;
                 const { translateX, translateY, duration } = styleForPhoto;
-
                 return (
                     <div
                         key={photo.key}
