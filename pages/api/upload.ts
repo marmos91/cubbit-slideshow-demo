@@ -1,28 +1,25 @@
 import { S3Client, PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm, Files } from 'formidable';
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Upload } from '@aws-sdk/lib-storage';
 import winston from 'winston';
+import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
+import retry from 'async-retry';
 
-// Configure Winston logger for production-ready logging.
+// Configure Winston logger.
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
         winston.format.timestamp(),
-        // Customize the log format.
         winston.format.printf(({ timestamp, level, message, ...meta }) => {
             const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
             return `${timestamp} [${level.toUpperCase()}]: ${message} ${metaString}`;
         })
     ),
-    transports: [
-        new winston.transports.Console(),
-        // Add additional transports for production, e.g. file, remote logging, etc.
-        // new winston.transports.File({ filename: 'combined.log' }),
-    ],
+    transports: [new winston.transports.Console()],
 });
 
 // Allowed image MIME types.
@@ -43,7 +40,25 @@ const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
     ? parseInt(process.env.MAX_FILE_SIZE, 10)
     : 40 * 1024 * 1024;
 
-// Validate required environment variables for S3.
+// Rate limiting config from environment.
+const RATE_LIMIT_POINTS = process.env.RATE_LIMIT_POINTS
+    ? parseInt(process.env.RATE_LIMIT_POINTS, 10)
+    : 10; // max requests per window
+const RATE_LIMIT_DURATION = process.env.RATE_LIMIT_DURATION
+    ? parseInt(process.env.RATE_LIMIT_DURATION, 10)
+    : 60; // window in seconds
+
+// Create an in-memory rate limiter. For production, consider using a Redis store.
+const rateLimiter = new RateLimiterMemory({
+    points: RATE_LIMIT_POINTS,
+    duration: RATE_LIMIT_DURATION,
+});
+
+// Retry config from environment.
+const RETRY_COUNT = process.env.RETRY_COUNT ? parseInt(process.env.RETRY_COUNT, 10) : 3;
+const RETRY_DELAY_MS = process.env.RETRY_DELAY_MS ? parseInt(process.env.RETRY_DELAY_MS, 10) : 500;
+
+// Validate required S3 environment variables.
 if (
     !process.env.S3_ACCESS_KEY_ID ||
     !process.env.S3_SECRET_ACCESS_KEY ||
@@ -81,12 +96,24 @@ export default async function handler(
         error?: string;
     }>
 ) {
+    // Use req.socket.remoteAddress instead of req.connection.remoteAddress
+    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    try {
+        await rateLimiter.consume(ip);
+    } catch (rejRes: unknown) {
+        const rlRes = rejRes as RateLimiterRes;
+        const retrySecs = Math.round(rlRes.msBeforeNext / 1000) || 1;
+        res.setHeader('Retry-After', String(retrySecs));
+        logger.warn('Rate limit exceeded', { ip, retryAfter: retrySecs });
+        return res.status(429).json({ message: 'Too Many Requests' });
+    }
+
     if (req.method !== 'POST') {
         logger.warn('Method not allowed', { method: req.method });
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
         const form = new IncomingForm({ maxFileSize: MAX_FILE_SIZE });
         form.parse(req, async (err, _fields, files: Files) => {
             if (err) {
@@ -128,32 +155,38 @@ export default async function handler(
                 const fileName = `${uuidv4()}${fileExtension}`;
                 const fullPath = `${folderPath}/${fileName}`;
 
-                // Read file content asynchronously.
-                const fileContent = await fs.readFile(file.filepath);
+                // Use a stream to avoid loading the entire file into memory.
+                const fileStream = fs.createReadStream(file.filepath);
 
                 const uploadParams: PutObjectCommandInput = {
                     Bucket: process.env.S3_BUCKET_NAME,
                     Key: fullPath,
-                    Body: fileContent,
+                    Body: fileStream,
                     ContentType: file.mimetype || undefined,
                     ContentDisposition: `inline; filename="${encodeURIComponent(
                         file.originalFilename || fileName
                     )}"`,
                 };
 
-                // Use multipart upload for files larger than 5MB.
-                if (file.size > 5 * 1024 * 1024) {
-                    logger.info('Using multipart upload', { fileSize: file.size });
-                    const multipartUpload = new Upload({
-                        client: s3Client,
-                        params: uploadParams,
-                        leavePartsOnError: false,
-                    });
-                    await multipartUpload.done();
-                } else {
-                    logger.info('Using single-part upload', { fileSize: file.size });
-                    await s3Client.send(new PutObjectCommand(uploadParams));
-                }
+                // Wrap the S3 upload in retry logic.
+                await retry(
+                    async _bail => {
+                        // Use multipart upload if file size > 5MB.
+                        if (file.size > 5 * 1024 * 1024) {
+                            logger.info('Using multipart upload', { fileSize: file.size });
+                            const multipartUpload = new Upload({
+                                client: s3Client,
+                                params: uploadParams,
+                                leavePartsOnError: false,
+                            });
+                            await multipartUpload.done();
+                        } else {
+                            logger.info('Using single-part upload', { fileSize: file.size });
+                            await s3Client.send(new PutObjectCommand(uploadParams));
+                        }
+                    },
+                    { retries: RETRY_COUNT, minTimeout: RETRY_DELAY_MS }
+                );
 
                 const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fullPath}`;
                 logger.info('File uploaded successfully', { fileUrl, fileName: fullPath });
@@ -165,7 +198,8 @@ export default async function handler(
                 return resolve();
             } catch (uploadError) {
                 logger.error('Error uploading to S3', { error: uploadError });
-                const errorMessage = uploadError instanceof Error ? uploadError.message : 'Unknown error';
+                const errorMessage =
+                    uploadError instanceof Error ? uploadError.message : 'Unknown error';
                 res.status(500).json({ message: 'Error uploading file', error: errorMessage });
                 return resolve();
             }

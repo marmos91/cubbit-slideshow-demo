@@ -11,7 +11,7 @@ interface ErrorResponse {
 // Parse the environment variable or fallback to 40MB.
 const MAX_FILE_SIZE = process.env.NEXT_PUBLIC_MAX_FILE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE, 10)
-    : 40 * 1024 * 1024;
+    : 10 * 1024 * 1024;
 
 const UploadForm: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
