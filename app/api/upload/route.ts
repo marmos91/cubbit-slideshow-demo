@@ -11,13 +11,11 @@ import { NextResponse } from 'next/server';
 import { Readable } from 'stream';
 import http from 'http';
 
-async function bufferFromReadable(
-    readable: ReadableStream<Uint8Array<ArrayBufferLike>>
-): Promise<Buffer> {
+// Helper: Convert a Web ReadableStream to a Node.js Buffer.
+async function bufferFromReadable(readable: ReadableStream<Uint8Array>): Promise<Buffer> {
     const reader = readable.getReader();
     const chunks: Uint8Array[] = [];
     let done = false;
-
     while (!done) {
         const { done: doneReading, value } = await reader.read();
         done = doneReading;
@@ -29,12 +27,12 @@ async function bufferFromReadable(
 }
 
 // Helper: Create a minimal Node.js IncomingMessage-like object from a Request.
-// We use type assertions to satisfy TypeScript.
 function createNodeRequest(request: Request, bodyBuffer: Buffer): http.IncomingMessage {
     const stream = new Readable();
     stream.push(bodyBuffer);
     stream.push(null);
     const nodeReq = stream as unknown as http.IncomingMessage;
+    // Assign properties required by formidable.
     nodeReq.headers = Object.fromEntries(request.headers.entries());
     nodeReq.method = request.method;
     nodeReq.url = request.url;
@@ -80,10 +78,10 @@ const MULTIPART_THRESHOLD = process.env.MULTIPART_THRESHOLD
 // Rate limiting config.
 const RATE_LIMIT_POINTS = process.env.RATE_LIMIT_POINTS
     ? parseInt(process.env.RATE_LIMIT_POINTS, 10)
-    : 10; // max requests per window
+    : 10;
 const RATE_LIMIT_DURATION = process.env.RATE_LIMIT_DURATION
     ? parseInt(process.env.RATE_LIMIT_DURATION, 10)
-    : 60; // window in seconds
+    : 60;
 
 // Create an in-memory rate limiter.
 const rateLimiter = new RateLimiterMemory({
@@ -119,7 +117,7 @@ const s3Client = new S3Client({
 });
 
 export async function POST(request: Request) {
-    // Extract IP address from headers.
+    // Extract IP address.
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
 
     try {
@@ -140,14 +138,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'No request body provided' }, { status: 400 });
     }
 
-    // Convert the Request body (a Web ReadableStream) to a Buffer.
+    // Convert the Request body to a Buffer.
     const bodyBuffer = await bufferFromReadable(request.body);
 
     // Create a Node-compatible request for formidable.
     const nodeReq = createNodeRequest(request, bodyBuffer);
 
     const form = new IncomingForm({ maxFileSize: MAX_FILE_SIZE });
-    // Wrap formidable parsing in a Promise.
     const { files } = await new Promise<{ files: Files }>((resolve, reject) => {
         form.parse(nodeReq, (err, _fields, files) => {
             if (err) reject(err);
@@ -206,6 +203,7 @@ export async function POST(request: Request) {
                     ContentDisposition: `inline; filename="${encodeURIComponent(
                         file.originalFilename || fileName
                     )}"`,
+                    ACL: 'public-read', // Ensure the file is publicly readable.
                 };
 
                 if (file.size > MULTIPART_THRESHOLD) {
