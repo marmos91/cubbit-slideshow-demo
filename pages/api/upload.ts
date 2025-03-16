@@ -160,23 +160,22 @@ export default async function handler(
                 const fileName = `${uuidv4()}${fileExtension}`;
                 const fullPath = `${folderPath}/${fileName}`;
 
-                // Use a stream to avoid loading the entire file into memory.
-                const fileStream = fs.createReadStream(file.filepath);
-
-                const uploadParams: PutObjectCommandInput = {
-                    Bucket: process.env.S3_BUCKET_NAME,
-                    Key: fullPath,
-                    Body: fileStream,
-                    ContentType: file.mimetype || undefined,
-                    ContentDisposition: `inline; filename="${encodeURIComponent(
-                        file.originalFilename || fileName
-                    )}"`,
-                };
-
                 // Wrap the S3 upload in retry logic.
                 await retry(
                     async _bail => {
-                        // Use multipart upload if file size is above the configurable threshold.
+                        // Create a new file stream for each retry attempt.
+                        const fileStream = fs.createReadStream(file.filepath);
+
+                        const uploadParams: PutObjectCommandInput = {
+                            Bucket: process.env.S3_BUCKET_NAME,
+                            Key: fullPath,
+                            Body: fileStream,
+                            ContentType: file.mimetype || undefined,
+                            ContentDisposition: `inline; filename="${encodeURIComponent(
+                                file.originalFilename || fileName
+                            )}"`,
+                        };
+
                         if (file.size > MULTIPART_THRESHOLD) {
                             logger.info('Using multipart upload', {
                                 fileSize: file.size,
