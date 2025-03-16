@@ -8,7 +8,7 @@ interface ErrorResponse {
     error?: string;
 }
 
-// Parse the environment variable or fallback to 40MB.
+// Parse the environment variable or fallback to 10MB.
 const MAX_FILE_SIZE = process.env.NEXT_PUBLIC_MAX_FILE_SIZE
     ? parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE, 10)
     : 10 * 1024 * 1024;
@@ -139,20 +139,26 @@ const UploadForm: React.FC = () => {
                     <p>Supported formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, HEIC, HEIF</p>
                 </div>
 
-                <input
-                    type="file"
-                    className={styles.fileInput}
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={isUploading}
-                />
+                <div className={styles.fileInputWrapper}>
+                    <input
+                        type="file"
+                        id="fileInput"
+                        className={styles.fileInput}
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={isUploading}
+                    />
+                    <label htmlFor="fileInput" className={styles.fileLabel}>
+                        {file ? '📷 Change File' : '📷 Select an Image'}
+                    </label>
+                    {file && <div className={styles.selectedFileName}>{file.name}</div>}
+                </div>
 
-                {/* The button is disabled if no file is selected or if uploading */}
                 <button className={styles.button} type="submit" disabled={isUploading || !file}>
-                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                    {isUploading ? '⏳ Uploading...' : '🚀 Upload Image'}
                 </button>
-                {error && <div className={styles.error}>{error}</div>}
-                {uploadStatus && <div className={styles.status}>{uploadStatus}</div>}
+                {error && <div className={styles.error}>⚠️ {error}</div>}
+                {uploadStatus && <div className={styles.status}>✅ {uploadStatus}</div>}
             </form>
         </div>
     );

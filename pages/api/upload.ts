@@ -40,6 +40,11 @@ const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
     ? parseInt(process.env.MAX_FILE_SIZE, 10)
     : 40 * 1024 * 1024;
 
+// Configure multipart upload threshold from env (default to 5MB).
+const MULTIPART_THRESHOLD = process.env.MULTIPART_THRESHOLD
+    ? parseInt(process.env.MULTIPART_THRESHOLD, 10)
+    : 5 * 1024 * 1024;
+
 // Rate limiting config from environment.
 const RATE_LIMIT_POINTS = process.env.RATE_LIMIT_POINTS
     ? parseInt(process.env.RATE_LIMIT_POINTS, 10)
@@ -96,7 +101,7 @@ export default async function handler(
         error?: string;
     }>
 ) {
-    // Use req.socket.remoteAddress instead of req.connection.remoteAddress
+    // Use req.socket.remoteAddress instead of req.connection.remoteAddress.
     const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
     try {
         await rateLimiter.consume(ip);
@@ -171,9 +176,12 @@ export default async function handler(
                 // Wrap the S3 upload in retry logic.
                 await retry(
                     async _bail => {
-                        // Use multipart upload if file size > 5MB.
-                        if (file.size > 5 * 1024 * 1024) {
-                            logger.info('Using multipart upload', { fileSize: file.size });
+                        // Use multipart upload if file size is above the configurable threshold.
+                        if (file.size > MULTIPART_THRESHOLD) {
+                            logger.info('Using multipart upload', {
+                                fileSize: file.size,
+                                threshold: MULTIPART_THRESHOLD,
+                            });
                             const multipartUpload = new Upload({
                                 client: s3Client,
                                 params: uploadParams,
@@ -181,7 +189,10 @@ export default async function handler(
                             });
                             await multipartUpload.done();
                         } else {
-                            logger.info('Using single-part upload', { fileSize: file.size });
+                            logger.info('Using single-part upload', {
+                                fileSize: file.size,
+                                threshold: MULTIPART_THRESHOLD,
+                            });
                             await s3Client.send(new PutObjectCommand(uploadParams));
                         }
                     },

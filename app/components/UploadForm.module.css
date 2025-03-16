@@ -24,17 +24,55 @@
     width: 100%;
 }
 
-.fileInput {
-    padding: 0.5rem;
-    border: 2px solid var(--input-border);
-    border-radius: var(--border-radius);
-    transition: border-color var(--transition-duration);
+/* Keyframe for fadeIn animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.fileInput:hover,
-.fileInput:focus {
-    border-color: var(--primary-color);
-    outline: none;
+.fileInputWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Hide the default file input */
+.fileInput {
+    display: none;
+}
+
+.fileLabel {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-duration),
+        transform var(--transition-duration);
+    text-align: center;
+    width: 100%;
+}
+
+.fileLabel:hover,
+.fileLabel:focus {
+    background-color: var(--primary-hover);
+    transform: scale(1.03);
+}
+
+/* Display selected file name */
+.selectedFileName {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: #ccc;
+    text-align: center;
 }
 
 .button {
@@ -45,13 +83,14 @@
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color var(--transition-duration);
+    transition: background-color var(--transition-duration), transform var(--transition-duration);
 }
 
 .button:hover,
 .button:focus {
     background-color: var(--primary-hover);
     outline: none;
+    transform: scale(1.03);
 }
 
 /* Disabled state styling */
@@ -62,7 +101,14 @@
     opacity: 0.7;
 }
 
-/* Make error and status messages span the same width as the form/button */
+/* Override hover/focus effects for disabled button */
+.button:disabled:hover,
+.button:disabled:focus {
+    background-color: #ccc;
+    transform: none;
+}
+
+/* Error and status messages with fade-in animation */
 .error {
     color: var(--error-color);
     font-weight: bold;
@@ -74,6 +120,7 @@
     width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .status {
@@ -86,4 +133,5 @@
     width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
+    animation: fadeIn 0.5s ease-in-out;
 }
