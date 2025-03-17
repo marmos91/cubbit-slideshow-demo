@@ -8,7 +8,11 @@ export interface Photo {
     key: string;
 }
 
-const InfiniteCarousel: React.FC = () => {
+interface InfiniteCarouselProps {
+    pollInterval?: number;
+}
+
+const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ pollInterval = 5000 }) => {
     const [allPhotos, setAllPhotos] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -18,15 +22,16 @@ const InfiniteCarousel: React.FC = () => {
                 const data: Photo[] = await res.json();
 
                 if (Array.isArray(data)) {
-                    const currentPictures = Object.assign(allPhotos, {});
+                    setAllPhotos(prevPhotos => {
+                        const currentPictures = { ...prevPhotos };
 
-                    for (const photo of data) {
-                        if (!(photo.key in currentPictures)) {
-                            currentPictures[photo.key] = photo.url;
+                        for (const photo of data) {
+                            if (!(photo.key in currentPictures)) {
+                                currentPictures[photo.key] = photo.url;
+                            }
                         }
-                    }
-
-                    setAllPhotos(currentPictures);
+                        return currentPictures;
+                    });
                 } else {
                     console.error('Expected an array, got:', data);
                 }
@@ -36,7 +41,10 @@ const InfiniteCarousel: React.FC = () => {
         };
 
         fetchPhotos();
-    }, [allPhotos]);
+        const intervalId = setInterval(fetchPhotos, pollInterval);
+
+        return () => clearInterval(intervalId);
+    }, [pollInterval]);
 
     if (Object.keys(allPhotos).length === 0) {
         return <p className={styles.noPhotos}>No photos uploaded today.</p>;
