@@ -1,41 +1,52 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import styles from './InfiniteCarousel.module.css';
 
-interface Photo {
+export interface Photo {
     url: string;
-    key: string; // could also be the path
+    key: string;
 }
 
-interface InfiniteCarouselProps {
-    photos: Photo[];
-}
+const InfiniteCarousel: React.FC = () => {
+    const [allPhotos, setAllPhotos] = useState<Record<string, string>>({});
 
-const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ photos }) => {
-    // Split photos between two rows (for example, even indices for row 1 and odd for row 2)
-    const row1Photos = photos.filter((_, index) => index % 2 === 0);
-    const row2Photos = photos.filter((_, index) => index % 2 !== 0);
+    useEffect(() => {
+        const fetchPhotos = async () => {
+            try {
+                const res = await fetch('/api/photos');
+                const data: Photo[] = await res.json();
 
-    // Duplicate images to allow a continuous scroll
-    const duplicateImages = (items: Photo[]) => [...items, ...items];
+                if (Array.isArray(data)) {
+                    const currentPictures = Object.assign(allPhotos, {});
+
+                    for (const photo of data) {
+                        if (!(photo.key in currentPictures)) {
+                            currentPictures[photo.key] = photo.url;
+                        }
+                    }
+
+                    setAllPhotos(currentPictures);
+                } else {
+                    console.error('Expected an array, got:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching photos:', error);
+            }
+        };
+
+        fetchPhotos();
+    }, [allPhotos]);
+
+    if (Object.keys(allPhotos).length === 0) {
+        return <p className={styles.noPhotos}>No photos uploaded today.</p>;
+    }
 
     return (
-        <div className={styles.carousel}>
-            <div className={styles.row}>
-                {duplicateImages(row1Photos).map((photo, index) => (
-                    <div key={`row1-${index}`} className={styles.imageContainer}>
-                        <img src={photo.url} alt={photo.key} className={styles.image} />
-                    </div>
-                ))}
-            </div>
-            <div className={styles.rowReverse}>
-                {duplicateImages(row2Photos).map((photo, index) => (
-                    <div key={`row2-${index}`} className={styles.imageContainer}>
-                        <img src={photo.url} alt={photo.key} className={styles.image} />
-                    </div>
-                ))}
-            </div>
+        <div className={styles.container}>
+            <h1>Photos</h1>
         </div>
     );
-}
+};
 
 export default InfiniteCarousel;
-
