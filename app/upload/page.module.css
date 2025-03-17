@@ -3,8 +3,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Occupies full viewport height */
-    background: #121212; /* Dark background */
+    min-height: 100vh;
+    background: #121212;
     padding: 1rem;
 }
 
