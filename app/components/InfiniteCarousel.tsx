@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './InfiniteCarousel.module.css';
+import Image from 'next/image';
 
 export interface Photo {
     url: string;
@@ -11,6 +12,26 @@ export interface Photo {
 interface InfiniteCarouselProps {
     pollInterval?: number;
 }
+
+interface CroppedImageProps {
+    imageKey: string;
+    src: string;
+}
+
+const CroppedImage: React.FC<CroppedImageProps> = props => {
+    return (
+        <div className={styles.photoContainer}>
+            <Image
+                width={500}
+                height={500}
+                priority
+                src={props.src}
+                alt={`Photo ${props.src}`}
+                className={styles.photo}
+            />
+        </div>
+    );
+};
 
 const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ pollInterval = 5000 }) => {
     const [allPhotos, setAllPhotos] = useState<Record<string, string>>({});
@@ -52,7 +73,9 @@ const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ pollInterval = 5000
 
     return (
         <div className={styles.container}>
-            <h1>Photos</h1>
+            {Object.entries(allPhotos).map(([key, url]) => (
+                <CroppedImage src={url} imageKey={key} key={key} />
+            ))}
         </div>
     );
 };
