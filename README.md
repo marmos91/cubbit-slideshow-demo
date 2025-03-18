@@ -11,6 +11,22 @@ The application allows photos to be uploaded to a designated S3 bucket and displ
 - npm
 - Docker (optional, for containerized deployment)
 
+## How to run
+
+In order to run the webserver directly via docker just run the following command:
+
+```bash
+docker run -d \
+  -e S3_REGION=eu-central-1 \
+  -e S3_ACCESS_KEY_ID=<your-access-key> \
+  -e S3_SECRET_ACCESS_KEY=<your-secret-key> \
+  -e MULTIPART_THRESHOLD=5242880 \
+  -e NEXT_PUBLIC_S3_BUCKET_NAME=<your-bucket> \
+  -e NEXT_PUBLIC_MAX_FILE_SIZE=10485760 \
+  -e NEXT_PUBLIC_S3_ENDPOINT=<your-s3-endpoint> \
+  marmos91c/cubbit-slideshow-demo
+```
+
 ## Getting Started
 
 ### Local Development
