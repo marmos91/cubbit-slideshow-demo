@@ -17,6 +17,7 @@ In order to run the webserver directly via docker just run the following command
 
 ```bash
 docker run -d \
+  -p 3000:3000 \
   -e S3_REGION=eu-central-1 \
   -e S3_ACCESS_KEY_ID=<your-access-key> \
   -e S3_SECRET_ACCESS_KEY=<your-secret-key> \
