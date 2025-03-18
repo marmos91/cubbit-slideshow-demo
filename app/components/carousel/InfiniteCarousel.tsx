@@ -67,9 +67,18 @@ const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ pollInterval = 5000
 
     return (
         <div className={styles.carousel}>
-            {rows.map((rowPhotos, rowIndex) => (
-                <CarouselRow rowPhotos={rowPhotos} key={rowIndex} />
-            ))}
+            {rows.map((rowPhotos, rowIndex) => {
+                const direction = rowIndex % 2 === 0 ? 'left' : 'right';
+
+                return (
+                    <CarouselRow
+                        rowPhotos={rowPhotos}
+                        key={rowIndex}
+                        direction={direction}
+                        rowIndex={rowIndex}
+                    />
+                );
+            })}
         </div>
     );
 };

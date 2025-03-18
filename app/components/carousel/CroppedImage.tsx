@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import styles from './CroppedImage.module.css';
+import { Photo } from './Photo';
 
 interface CroppedImageProps {
-    imageKey: string;
-    src: string;
+    photo: Photo;
 }
 
-const CroppedImage: React.FC<CroppedImageProps> = ({ src }) => {
+const CroppedImage: React.FC<CroppedImageProps> = ({ photo }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     return (
@@ -16,8 +16,8 @@ const CroppedImage: React.FC<CroppedImageProps> = ({ src }) => {
                 width={500}
                 height={500}
                 priority
-                src={src}
-                alt={`Photo ${src}`}
+                src={photo.url}
+                alt={`Photo ${photo.url}`}
                 className={`${styles.photo} ${isLoaded ? styles.loaded : ''}`}
                 onLoad={() => setIsLoaded(true)}
             />
