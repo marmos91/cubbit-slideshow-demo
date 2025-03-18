@@ -1,34 +1,39 @@
-# Stage 1: Build
+# ---------------------------
+# Stage 1: Build the Next.js app
+# ---------------------------
 FROM node:18-alpine AS builder
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Install dependencies (using npm ci for reproducible installs)
+# Install dependencies using npm ci (reproducible installs)
 COPY package*.json ./
 RUN npm ci
 
-# Copy all files and build the Next.js app
+# Copy all source files
 COPY . .
+
+# Build the Next.js app (output: standalone in next.config.js)
 RUN npm run build
 
-# Stage 2: Production image
+# ---------------------------
+# Stage 2: Create a minimal production image
+# ---------------------------
 FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-# Set environment variable for production
+# Set production environment variable
 ENV NODE_ENV=production
 
-# Copy built app and necessary files from builder stage
-COPY --from=builder /app/.next ./.next
+# Copy the standalone build from the builder
+# .next/standalone includes the compiled server and necessary node_modules
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/node_modules ./node_modules
 
-# Expose the port Next.js listens on (default 3000)
+# Expose Next.js default port
 EXPOSE 3000
 
-# Start the Next.js server
-CMD ["npm", "run", "start"]
+# Run the standalone server directly
+CMD ["node", "server.js"]

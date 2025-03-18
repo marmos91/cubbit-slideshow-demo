@@ -15,6 +15,7 @@ const CroppedImage: React.FC<CroppedImageProps> = ({ photo }) => {
             <Image
                 width={500}
                 height={500}
+                unoptimized
                 priority
                 src={photo.url}
                 alt={`Photo ${photo.url}`}
