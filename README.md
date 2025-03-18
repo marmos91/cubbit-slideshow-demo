@@ -84,7 +84,7 @@ This project includes Docker support for containerized deployment.
 1. Build the Docker image:
 
 ```bash
-docker build -t cubbit-elemento-demo .
+docker build -t cubbit-slideshow-demo .
 ```
 
 2. Run with Docker Compose:
