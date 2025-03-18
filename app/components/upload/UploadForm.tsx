@@ -136,6 +136,7 @@ const UploadForm: React.FC = () => {
             <div className={styles.uploadContainer}>
                 <form className={styles.form} onSubmit={uploadFile}>
                     <div className={styles.instructions}>
+                        <p>Upload an image (max {MAX_FILE_SIZE / (1024 * 1024)}MB)</p>
                         <p>Supported formats: JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, HEIC, HEIF</p>
                     </div>
 
