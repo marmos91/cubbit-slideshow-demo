@@ -2,6 +2,9 @@
 
 A Next.js application demonstrating file upload and slideshow capabilities using Cubbit Elemento S3-compatible storage.
 
+![./assets/screenshot1.jpeg](./assets/screenshot1.jpeg)
+![./assets/screenshot2.jpeg](./assets/screenshot2.png)
+
 ## Prerequisites
 
 - Node.js 18 or later
@@ -15,7 +18,7 @@ A Next.js application demonstrating file upload and slideshow capabilities using
 1. Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/marmos91/cubbit-elemento-demo.git
 cd cubbit-elemento-demo
 ```
 
