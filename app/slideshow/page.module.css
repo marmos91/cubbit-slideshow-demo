@@ -22,6 +22,10 @@
     margin: 0.3rem;
 }
 
+.header span {
+    margin-left: auto;
+}
+
 @keyframes headerFade {
     from {
         opacity: 0;

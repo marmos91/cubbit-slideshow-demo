@@ -16,13 +16,16 @@ async function bufferFromReadable(readable: ReadableStream<Uint8Array>): Promise
     const reader = readable.getReader();
     const chunks: Uint8Array[] = [];
     let done = false;
+
     while (!done) {
         const { done: doneReading, value } = await reader.read();
         done = doneReading;
+
         if (value) {
             chunks.push(value);
         }
     }
+
     return Buffer.concat(chunks);
 }
 
@@ -31,11 +34,12 @@ function createNodeRequest(request: Request, bodyBuffer: Buffer): http.IncomingM
     const stream = new Readable();
     stream.push(bodyBuffer);
     stream.push(null);
+
     const nodeReq = stream as unknown as http.IncomingMessage;
-    // Assign properties required by formidable.
     nodeReq.headers = Object.fromEntries(request.headers.entries());
     nodeReq.method = request.method;
     nodeReq.url = request.url;
+
     return nodeReq;
 }
 
@@ -66,8 +70,8 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 // Parse MAX_FILE_SIZE from environment, defaulting to 40MB.
-const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE
-    ? parseInt(process.env.MAX_FILE_SIZE, 10)
+const MAX_FILE_SIZE = process.env.NEXT_PUBLIC_MAX_FILE_SIZE
+    ? parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE, 10)
     : 40 * 1024 * 1024;
 
 // Configure multipart upload threshold from env (default to 5MB).
@@ -75,7 +79,6 @@ const MULTIPART_THRESHOLD = process.env.MULTIPART_THRESHOLD
     ? parseInt(process.env.MULTIPART_THRESHOLD, 10)
     : 5 * 1024 * 1024;
 
-// Rate limiting config.
 const RATE_LIMIT_POINTS = process.env.RATE_LIMIT_POINTS
     ? parseInt(process.env.RATE_LIMIT_POINTS, 10)
     : 10;
@@ -97,9 +100,9 @@ const RETRY_DELAY_MS = process.env.RETRY_DELAY_MS ? parseInt(process.env.RETRY_D
 if (
     !process.env.S3_ACCESS_KEY_ID ||
     !process.env.S3_SECRET_ACCESS_KEY ||
-    !process.env.S3_BUCKET_NAME ||
+    !process.env.NEXT_PUBLIC_S3_BUCKET_NAME ||
     !process.env.S3_REGION ||
-    !process.env.S3_ENDPOINT
+    !process.env.NEXT_PUBLIC_S3_ENDPOINT
 ) {
     logger.error('Missing required S3 environment variables');
     throw new Error('Missing required S3 environment variables');
@@ -112,7 +115,7 @@ const s3Client = new S3Client({
         accessKeyId: process.env.S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
     },
-    endpoint: process.env.S3_ENDPOINT,
+    endpoint: process.env.NEXT_PUBLIC_S3_ENDPOINT,
     forcePathStyle: true,
 });
 
@@ -196,7 +199,7 @@ export async function POST(request: Request) {
                 const fileStream = fs.createReadStream(file.filepath);
 
                 const uploadParams: PutObjectCommandInput = {
-                    Bucket: process.env.S3_BUCKET_NAME,
+                    Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
                     Key: fullPath,
                     Body: fileStream,
                     ContentType: file.mimetype || undefined,
@@ -228,7 +231,7 @@ export async function POST(request: Request) {
             { retries: RETRY_COUNT, minTimeout: RETRY_DELAY_MS }
         );
 
-        const fileUrl = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fullPath}`;
+        const fileUrl = `${process.env.NEXT_PUBLIC_S3_ENDPOINT}/${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}/${fullPath}`;
         logger.info('File uploaded successfully', { fileUrl, fileName: fullPath });
         return NextResponse.json({
             message: 'Image uploaded successfully',

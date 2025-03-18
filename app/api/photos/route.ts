@@ -2,10 +2,21 @@ import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 
 // Validate required environment variables.
-const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET_NAME, S3_REGION, S3_ENDPOINT } =
-    process.env;
+const {
+    S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY,
+    NEXT_PUBLIC_S3_BUCKET_NAME,
+    S3_REGION,
+    NEXT_PUBLIC_S3_ENDPOINT,
+} = process.env;
 
-if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_BUCKET_NAME || !S3_REGION || !S3_ENDPOINT) {
+if (
+    !S3_ACCESS_KEY_ID ||
+    !S3_SECRET_ACCESS_KEY ||
+    !NEXT_PUBLIC_S3_BUCKET_NAME ||
+    !S3_REGION ||
+    !NEXT_PUBLIC_S3_ENDPOINT
+) {
     throw new Error('Missing required S3 environment variables');
 }
 
@@ -16,7 +27,7 @@ const s3Client = new S3Client({
         accessKeyId: S3_ACCESS_KEY_ID,
         secretAccessKey: S3_SECRET_ACCESS_KEY,
     },
-    endpoint: S3_ENDPOINT,
+    endpoint: NEXT_PUBLIC_S3_ENDPOINT,
     forcePathStyle: true,
 });
 
@@ -30,7 +41,7 @@ export async function GET() {
 
     try {
         const command = new ListObjectsV2Command({
-            Bucket: S3_BUCKET_NAME,
+            Bucket: NEXT_PUBLIC_S3_BUCKET_NAME,
             Prefix: prefix,
         });
         const response = await s3Client.send(command);
@@ -40,7 +51,7 @@ export async function GET() {
         // Since you're using an s3-compatible service, we use the S3_ENDPOINT to construct the URL.
         const images = objects.map(obj => ({
             key: obj.Key,
-            url: `${S3_ENDPOINT}/${S3_BUCKET_NAME}/${obj.Key}`,
+            url: `${NEXT_PUBLIC_S3_ENDPOINT}/${NEXT_PUBLIC_S3_BUCKET_NAME}/${obj.Key}`,
         }));
 
         return NextResponse.json(images);
