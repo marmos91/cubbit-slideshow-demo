@@ -139,7 +139,7 @@
     padding: 1rem;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -165,7 +165,7 @@
 
     .errorToast,
     .statusToast {
-        font-size: 1.1rem;
+        font-size: 0.8rem;
         padding: 0.75rem;
     }
 }
