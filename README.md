@@ -1,8 +1,8 @@
-# Cubbit Elemento Demo
+# Cubbit Slideshow Demo
 
-A Next.js application demonstrating file upload and slideshow capabilities using Cubbit Elemento S3-compatible storage.
+A Next.js application demonstrating file upload and slideshow capabilities using Cubbit DS3 storage.
+The application allows photos to be uploaded to a designated S3 bucket and displayed in a slideshow. Photos will be grouped by date (with a year/month/day folder structure) and the slideshow will show photos taken during the current day.
 
-![./assets/screenshot1.jpeg](./assets/screenshot1.jpeg)
 ![./assets/screenshot2.jpeg](./assets/screenshot2.png)
 
 ## Prerequisites
@@ -18,8 +18,8 @@ A Next.js application demonstrating file upload and slideshow capabilities using
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/marmos91/cubbit-elemento-demo.git
-cd cubbit-elemento-demo
+git clone https://github.com/marmos91/cubbit-slideshow-demo.git
+cd cubbit-slideshow-demo
 ```
 
 2. Install dependencies:
@@ -95,4 +95,9 @@ docker-compose up -d
 
 The application will be available at `http://localhost:3000`.
 
-## Project Structure
+## Usage
+
+Just visit:
+
+- `http://localhost:3000/upload` to upload new photos
+- `http://localhost:3000/slideshow` to see the slideshow in action.

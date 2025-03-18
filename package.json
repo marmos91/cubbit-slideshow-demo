@@ -1,6 +1,6 @@
 {
-    "name": "cubbit-elemento-demo",
-    "version": "0.1.0",
+    "name": "cubbit-slideshow-demo",
+    "version": "1.0.0",
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
