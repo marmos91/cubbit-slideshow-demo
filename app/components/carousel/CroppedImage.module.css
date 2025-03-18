@@ -1,13 +1,3 @@
-.noPhotos {
-    margin: 1rem;
-}
-
-.carousel {
-    display: flex;
-    flex-direction: column;
-    margin: 1rem;
-}
-
 .photoContainer {
     flex: 0 0 auto;
     width: 15rem;
@@ -17,12 +7,6 @@
     margin: 1rem;
 }
 
-.carouselRow {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
-}
 
 .photo {
     width: 100%;

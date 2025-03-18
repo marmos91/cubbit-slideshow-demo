@@ -2,7 +2,7 @@
 
 import styles from './page.module.css';
 import { Orbitron } from 'next/font/google';
-import InfiniteCarousel from '../components/InfiniteCarousel';
+import InfiniteCarousel from '../components/carousel/InfiniteCarousel';
 import Image from 'next/image';
 
 const orbitron = Orbitron({
