@@ -1,16 +1,14 @@
-.animatedRow {
+.staticRow {
     display: flex;
     gap: 1rem;
 }
 
-/* Left-scrolling marquee: 0 -> -translate */
 .scrollLeftRow {
-    animation: scrollLeft 30s linear infinite;
+    animation: scrollLeft 40s linear infinite;
 }
 
-/* Right-scrolling marquee: -translate -> 0 */
 .scrollRightRow {
-    animation: scrollRight 30s linear infinite;
+    animation: scrollRight 40s linear infinite;
 }
 
 @keyframes scrollLeft {
@@ -19,14 +17,12 @@
     }
 
     100% {
-        /* Move left by one unique set’s width */
         transform: translateX(calc(-1 * var(--translate)));
     }
 }
 
 @keyframes scrollRight {
     0% {
-        /* Start offset left by one set’s width, so we see the second half initially */
         transform: translateX(calc(-1 * var(--translate)));
     }
 

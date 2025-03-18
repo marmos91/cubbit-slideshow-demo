@@ -30,7 +30,7 @@ export default function SlideshowPage() {
                 <h1>{formattedDate}</h1>
             </header>
 
-            <div className={styles.masonry}>
+            <div className={styles.carouselContainer}>
                 <InfiniteCarousel />
             </div>
         </main>

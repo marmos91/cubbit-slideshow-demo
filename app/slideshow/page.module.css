@@ -33,3 +33,7 @@
         transform: translateY(0);
     }
 }
+
+.carouselContainer {
+    overflow: hidden;
+}

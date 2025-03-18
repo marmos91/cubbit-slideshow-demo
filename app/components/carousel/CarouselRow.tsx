@@ -6,14 +6,30 @@ interface CarouselRowProps {
     rowPhotos: Photo[];
     direction: 'left' | 'right';
     rowIndex: number;
+    minCountForMarquee?: number;
 }
 
-const CarouselRow: React.FC<CarouselRowProps> = ({ rowPhotos, direction }) => {
+const CarouselRow: React.FC<CarouselRowProps> = ({
+    rowPhotos,
+    direction,
+    minCountForMarquee = 6,
+}) => {
+    // Enable Marquee only after threshold
+    if (rowPhotos.length < minCountForMarquee) {
+        return (
+            <div className={styles.staticRow}>
+                {rowPhotos.map((photo, i) => (
+                    <CroppedImage photo={photo} key={`${photo.key}-${i}`} />
+                ))}
+            </div>
+        );
+    }
+
     const doubled = [...rowPhotos, ...rowPhotos];
 
-    const containerWidth = 15 * 16; // e.g. 15rem => 240px
-    const gapWidth = 16; // 1rem => 16px
-    const itemWidth = containerWidth + gapWidth; // ~256px each
+    const containerWidth = 15 * 16;
+    const gapWidth = 16;
+    const itemWidth = containerWidth + gapWidth;
     const uniqueWidth = rowPhotos.length * itemWidth;
 
     const rowStyle: React.CSSProperties = {
@@ -23,7 +39,7 @@ const CarouselRow: React.FC<CarouselRowProps> = ({ rowPhotos, direction }) => {
     const rowClass = direction === 'left' ? styles.scrollLeftRow : styles.scrollRightRow;
 
     return (
-        <div className={`${styles.animatedRow} ${rowClass}`} style={rowStyle}>
+        <div className={`${styles.staticRow} ${rowClass}`} style={rowStyle}>
             {doubled.map((photo, i) => (
                 <CroppedImage photo={photo} key={`${photo.key}-${i}`} />
             ))}
